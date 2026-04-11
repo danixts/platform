@@ -1,0 +1,9 @@
+*.test
+*.out
+*.prof
+/bin/
+/tmp/
+.env
+.env.*
+.DS_Store
+coverage.*
