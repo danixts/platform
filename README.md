@@ -1,4 +1,4 @@
-# xmart-platform
+# platform
 
 SDK interno de XMart Cloud. Wrappers finos sobre clientes de infraestructura
 (Postgres, Redis, NATS, S3, Resty) y utilitarios compartidos (middleware de
@@ -36,9 +36,9 @@ identidad, logger, response envelope, crypto, timeutil).
 
 ```go
 import (
-    xmw   "github.com/danixts/xmart-platform/middleware"
-    xpg   "github.com/danixts/xmart-platform/db/postgres"
-    xresp "github.com/danixts/xmart-platform/response"
+    xmw   "github.com/danixts/platform/middleware"
+    xpg   "github.com/danixts/platform/db/postgres"
+    xresp "github.com/danixts/platform/response"
 )
 
 func main() {
@@ -67,7 +67,7 @@ func main() {
 ```bash
 export GOPRIVATE=github.com/danixts/*
 git config --global url."git@github.com:danixts/".insteadOf "https://github.com/danixts/"
-go get github.com/danixts/xmart-platform@v0.1.0
+go get github.com/danixts/platform@v0.1.0
 ```
 
 En CI (GitHub Actions):

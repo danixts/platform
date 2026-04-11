@@ -101,13 +101,17 @@ func MustFromContext(c fiber.Ctx) *Identity {
 	return id
 }
 
+// GetIdentity is an alias for MustFromContext, kept for call-site
+// ergonomics. Prefer FromContext in new code when you need to distinguish
+// "no identity" from "handler error".
+func GetIdentity(c fiber.Ctx) *Identity { return MustFromContext(c) }
+
 // Convenience accessors — safe to call from any handler that runs after Tenant().
 // They panic if Tenant() was not in the chain (programming error).
 
 func GetAccountUID(c fiber.Ctx) string { return MustFromContext(c).AccountUID }
 func GetUserUID(c fiber.Ctx) string    { return MustFromContext(c).UserUID }
 func GetTimezone(c fiber.Ctx) string   { return MustFromContext(c).Timezone }
-func GetRequestID(c fiber.Ctx) string  { return MustFromContext(c).RequestID }
 func GetRole(c fiber.Ctx) string       { return MustFromContext(c).Role }
 
 // parseIdentity builds an *Identity from the incoming request headers.

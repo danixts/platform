@@ -7,6 +7,8 @@ import (
 	"errors"
 
 	"github.com/gofiber/fiber/v3"
+
+	"github.com/danixts/platform/logger"
 )
 
 // Body is the envelope returned by every handler. Data is omitted from the
@@ -88,10 +90,17 @@ func ValidationFail(c fiber.Ctx, errs []string) error {
 	})
 }
 
-// Internal writes a 500 with a generic "internal_server_error" message.
-// The underlying error should be logged by the caller — this package
-// intentionally does not depend on a logger to stay framework-agnostic.
-func Internal(c fiber.Ctx) error {
+// Internal writes a 500 response with a generic "internal_server_error"
+// message. If an error is passed, it is logged at Error level with the
+// request path and method — callers do not need a separate log line.
+func Internal(c fiber.Ctx, errs ...error) error {
+	if len(errs) > 0 && errs[0] != nil {
+		logger.Error().
+			Err(errs[0]).
+			Str("path", c.Path()).
+			Str("method", c.Method()).
+			Msg("handler internal error")
+	}
 	return fail(c, fiber.StatusInternalServerError, "internal_server_error")
 }
 
@@ -120,12 +129,13 @@ var errorStatus = map[error]int{
 }
 
 // FromErr maps a domain error to the appropriate HTTP response. If the
-// error does not match any sentinel, a 500 is returned.
+// error does not match any sentinel, a 500 is returned and the error is
+// logged.
 func FromErr(c fiber.Ctx, err error) error {
 	for sentinel, code := range errorStatus {
 		if errors.Is(err, sentinel) {
 			return fail(c, code, err.Error())
 		}
 	}
-	return Internal(c)
+	return Internal(c, err)
 }

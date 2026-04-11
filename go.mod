@@ -1,4 +1,4 @@
-module github.com/danixts/xmart-platform
+module github.com/danixts/platform
 
 go 1.26.2
 
@@ -11,6 +11,7 @@ require (
 	github.com/go-resty/resty/v2 v2.17.2
 	github.com/gofiber/fiber/v3 v3.1.0
 	github.com/nats-io/nats.go v1.50.0
+	github.com/oklog/ulid/v2 v2.1.1
 	github.com/redis/go-redis/v9 v9.18.0
 	github.com/rs/zerolog v1.35.0
 	gorm.io/driver/postgres v1.6.0
