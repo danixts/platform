@@ -9,9 +9,6 @@ import (
 	"github.com/danixts/platform/response"
 )
 
-// Recover returns a Fiber handler that traps panics in the downstream
-// chain, logs the panic value plus a stack trace, and replies with a
-// generic 500. It is safe to place at the top of the middleware stack.
 func Recover() fiber.Handler {
 	return func(c fiber.Ctx) (err error) {
 		defer func() {

@@ -1,8 +1,5 @@
 package middleware
 
-// Header names emitted by the core-manager gateway. Keep this file in sync
-// with the gateway contract — adding/removing a header here is a breaking
-// change for every consumer.
 const (
 	HeaderIsValid        = "X-Is-Valid"
 	HeaderAuthType       = "X-Auth-Type"

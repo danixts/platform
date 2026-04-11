@@ -11,7 +11,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Initial bootstrap of the SDK.
 - `middleware` package: gateway identity middleware for Fiber v3 with
   `Tenant()` handler, `*Identity` struct, `FromContext` accessor and the
-  `X-*` header contract emitted by core-manager.
+  `X-*` header contract emitted by an upstream auth gateway. Also ships
+  `RequestID()`, `AccessLog()` and `Recover()` helpers.
 - `response` package: standard `Body` envelope + generic `Page[T]` list
   envelope + sentinel errors + `FromErr` helper.
 - `logger` package: zerolog wrapper with `Init(Config)` and level helpers.
@@ -25,8 +26,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   with MinIO-compatible endpoint override.
 - `httpclient/resty` package: go-resty/v2 preconfigured with sonic,
   retry defaults and a browser-like User-Agent.
-- `timeutil` package: UTC-first time helpers and `LoadLocation` with
-  America/La_Paz fallback.
+- `timeutil` package: UTC-first time helpers and `LoadLocation` with a
+  configurable default location (`SetDefaultLocation`).
 - `jsonutil` package: sonic wrapper + `Sanitize` / `SanitizeHeaders` for
   safe logging.
 - `crypto/aesgcm` package: AES-256-GCM AEAD keyed from `APP_SECRET`.

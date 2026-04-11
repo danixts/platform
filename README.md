@@ -1,87 +1,128 @@
 # platform
 
-SDK interno de XMart Cloud. Wrappers finos sobre clientes de infraestructura
-(Postgres, Redis, NATS, S3, Resty) y utilitarios compartidos (middleware de
-identidad, logger, response envelope, crypto, timeutil).
+Opinionated Go SDK for building HTTP services with Fiber v3. Ships thin
+wrappers over the usual suspects — Postgres (GORM), Redis, NATS, S3,
+HTTP client — plus a request-scoped identity middleware, a standard
+response envelope, structured logging and a handful of utilities.
 
-## Principios
+## Design goals
 
-- **Wrappers finos, no frameworks**. Cada cliente expone `New(Config)` y un
-  puñado de métodos de alto nivel. Cuando el wrapper no alcanza, `Raw()`
-  devuelve el cliente subyacente.
-- **Context-first**. Todo I/O recibe `context.Context` como primer parámetro.
-- **Sin panics en producción**. Las únicas excepciones son errores de
-  programación (p.ej. usar `middleware.FromContext` sin el middleware en el chain).
-- **Cero dependencia de frameworks salvo Fiber v3** para el middleware HTTP.
-- **Compatibilidad semver**. Breaking changes sólo en major bumps.
+- **Thin wrappers, not frameworks.** Every client exposes `New(Config)`
+  and a small surface. When the wrapper is not enough, `Raw()` returns
+  the underlying library client so you can use it directly.
+- **Context-first.** All I/O takes `context.Context` as its first
+  parameter.
+- **No hidden panics.** The only exception is `MustFromContext`, which
+  panics when the middleware chain is misconfigured (a programming
+  error, not a runtime condition).
+- **Config via plain structs.** No global state, no environment parsing
+  inside the SDK — the consumer owns configuration loading.
+- **Semantic versioning.** Pre-1.0, minor bumps may break API; from
+  v1.0 onwards, breaking changes only in major versions.
 
-## Paquetes
+## Packages
 
-| Paquete | Descripción |
+| Package | Purpose |
 |---|---|
-| `middleware` | Identity unificado: parsea headers `X-*` del gateway y expone `*Identity` request-scoped. |
-| `response` | Envelope estándar `Body[T]` y paginado `Page[T]`. |
-| `logger` | Zerolog pre-configurado con salida JSON en prod y pretty en dev. |
-| `db/postgres` | Wrapper GORM con pool tuneable y logger integrado. |
-| `cache/redis` | Wrapper `go-redis/v9` con helpers de strings, sets y rate-limit. |
-| `queue/nats` | Wrapper `nats.go` con `PublishJSON` y `QueueSubscribe`. |
-| `storage/s3` | Wrapper `aws-sdk-go-v2/s3` para Put/Get/Delete/Presign (soporta MinIO via endpoint). |
-| `httpclient/resty` | Resty v2 pre-configurado con sonic, retry y UA default. |
-| `timeutil` | `LoadLocation` con fallback a `America/La_Paz`. |
-| `jsonutil` | Wrapper sonic + `SanitizeHeaders` para logs. |
-| `crypto/aesgcm` | AES-256-GCM con clave derivada de `APP_SECRET`. |
-| `pagination` | Parseo de query params `page`/`page_size`. |
+| `middleware` | Fiber v3 handlers for identity (`Tenant`), request id, access log and panic recovery. |
+| `response` | Standard `Body` envelope, generic `Page[T]`, sentinel errors and `FromErr` mapper. |
+| `logger` | zerolog pre-configured with `Init(Config)` and level helpers. |
+| `db/postgres` | GORM wrapper with tuneable pool, UTC `NowFunc` and prepared statement cache. |
+| `cache/redis` | `go-redis/v9` wrapper covering strings, sets, TTL and ping. |
+| `queue/nats` | `nats.go` wrapper with `PublishJSON` (sonic) and queue subscriptions. |
+| `storage/s3` | `aws-sdk-go-v2/s3` wrapper for Put / Delete / Presign. Supports MinIO via endpoint override. |
+| `httpclient/resty` | `go-resty/v2` preconfigured with sonic, retry and a browser-like User-Agent. |
+| `timeutil` | UTC-first helpers and `LoadLocation` with a configurable default. |
+| `jsonutil` | sonic wrapper plus `Sanitize` / `SanitizeHeaders` for safe logging. |
+| `crypto/aesgcm` | AES-256-GCM AEAD keyed from a base64 32-byte secret. |
 
-## Uso
+## Identity middleware
+
+The `middleware` package parses a set of `X-*` headers into a typed
+`*Identity` made available through `FromContext`. The expected headers
+are emitted by an upstream API gateway / auth service:
+
+```
+X-Is-Valid           true|false
+X-Auth-Type          jwt|apikey|...
+X-User-Uid           <uid>
+X-Username           <string>
+X-Email              <string>
+X-Role               <string>
+X-Is-Super-Admin     true|false
+X-Is-Internal        true|false
+X-User-Status        active|...
+X-Timezone           <IANA tz>
+X-Timezone-Offset    <±HH:MM>
+X-Account-Uid        <uid>
+X-Product-Slugs      slug1,slug2,...
+X-Request-Id         <id>
+```
+
+Reject policy is configurable through `middleware.Options` — the default
+returns 401 when `X-Is-Valid != "true"`, `X-User-Uid` is missing or
+`X-Account-Uid` is missing.
+
+## Quick start
 
 ```go
+package main
+
 import (
-    xmw   "github.com/danixts/platform/middleware"
-    xpg   "github.com/danixts/platform/db/postgres"
-    xresp "github.com/danixts/platform/response"
+    "os"
+
+    "github.com/gofiber/fiber/v3"
+
+    xredis "github.com/danixts/platform/cache/redis"
+    xpg    "github.com/danixts/platform/db/postgres"
+    "github.com/danixts/platform/logger"
+    xmw    "github.com/danixts/platform/middleware"
+    xresp  "github.com/danixts/platform/response"
 )
 
 func main() {
+    logger.Init(logger.Config{Level: "info", Service: "my-service"})
+
     db, err := xpg.New(xpg.Config{
         DSN:          os.Getenv("DATABASE_URL"),
         MaxOpenConns: 50,
         MaxIdleConns: 10,
     })
-    // ...
+    if err != nil {
+        logger.Fatal().Err(err).Msg("postgres")
+    }
+
+    rdb, err := xredis.New(xredis.Config{URL: os.Getenv("REDIS_URL")})
+    if err != nil {
+        logger.Fatal().Err(err).Msg("redis")
+    }
+    _ = db
+    _ = rdb
 
     app := fiber.New()
+    app.Use(xmw.RequestID(), xmw.Recover(), xmw.AccessLog())
     app.Use(xmw.Tenant())
 
     app.Get("/me", func(c fiber.Ctx) error {
-        id, err := xmw.FromContext(c)
-        if err != nil {
-            return xresp.Unauthorized(c, "missing_identity")
-        }
-        return xresp.OK(c, id)
+        id := xmw.MustFromContext(c)
+        return xresp.OK(c, id, "ok")
     })
+
+    _ = app.Listen(":8080")
 }
 ```
 
-## Consumiendo este módulo privado
+## Installation
 
 ```bash
-export GOPRIVATE=github.com/danixts/*
-git config --global url."git@github.com:danixts/".insteadOf "https://github.com/danixts/"
-go get github.com/danixts/platform@v0.1.0
+go get github.com/danixts/platform@latest
 ```
 
-En CI (GitHub Actions):
+## Versioning
 
-```yaml
-- name: Configure Go private modules
-  env:
-    GOPRIVATE: github.com/danixts/*
-    GH_TOKEN: ${{ secrets.GH_PRIVATE_MODULES_TOKEN }}
-  run: |
-    git config --global url."https://x-access-token:${GH_TOKEN}@github.com/danixts/".insteadOf "https://github.com/danixts/"
-```
+Semantic versioning. `v0.x.y` is pre-stable — breaking changes may
+happen in minor bumps until `v1.0.0`.
 
-## Versionado
+## License
 
-Semver estricto. `v0.x.y` es pre-estable — breaking changes pueden suceder
-en minor bumps hasta `v1.0.0`.
+MIT.

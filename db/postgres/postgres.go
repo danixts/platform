@@ -1,7 +1,3 @@
-// Package postgres provides a thin wrapper around GORM + the pgx driver
-// preconfigured with the conventions used across XMart Cloud services:
-// UTC timestamps, prepared statements, translated errors and tuneable
-// connection pools.
 package postgres
 
 import (
@@ -13,8 +9,6 @@ import (
 	gormlogger "gorm.io/gorm/logger"
 )
 
-// LogLevel mirrors gorm.io/gorm/logger levels so callers don't need to
-// import the gorm logger package directly.
 type LogLevel int
 
 const (
@@ -24,38 +18,20 @@ const (
 	LogInfo   LogLevel = 4
 )
 
-// Config describes how to open a Postgres connection pool. Only DSN is
-// required; the rest have sensible defaults.
 type Config struct {
-	// DSN is the full libpq connection string. Callers are expected to
-	// build this from their own config layer.
-	DSN string
-
-	// MaxOpenConns caps the connection pool. Default: 50.
-	MaxOpenConns int
-	// MaxIdleConns caps idle connections. Default: 10.
-	MaxIdleConns int
-	// ConnMaxLifetime recycles connections after this duration. Default: 30m.
+	DSN             string
+	MaxOpenConns    int
+	MaxIdleConns    int
 	ConnMaxLifetime time.Duration
-	// ConnMaxIdleTime closes idle connections after this duration. Default: 5m.
 	ConnMaxIdleTime time.Duration
-
-	// LogLevel controls GORM's query logger. Default: LogWarn.
-	LogLevel LogLevel
-
-	// SlowThreshold logs queries slower than this at Warn. Default: 200ms.
-	SlowThreshold time.Duration
-
-	// PrepareStmt toggles GORM's prepared statement cache. Default: true.
-	PrepareStmt *bool
+	LogLevel        LogLevel
+	SlowThreshold   time.Duration
+	PrepareStmt     *bool
 }
 
-// New opens a GORM DB against Postgres with the given Config. It pings
-// the database before returning so callers get a clear error at startup
-// when the DSN is wrong or the server is unreachable.
 func New(cfg Config) (*gorm.DB, error) {
 	if cfg.DSN == "" {
-		return nil, fmt.Errorf("xmart-platform/db/postgres: empty DSN")
+		return nil, fmt.Errorf("platform/db/postgres: empty DSN")
 	}
 	applyDefaults(&cfg)
 
@@ -87,9 +63,6 @@ func New(cfg Config) (*gorm.DB, error) {
 	return db, nil
 }
 
-// Close closes the underlying sql.DB. GORM does not expose Close directly
-// because the pool is meant to live as long as the process, so callers
-// should only use this in tests or graceful shutdown paths.
 func Close(db *gorm.DB) error {
 	if db == nil {
 		return nil

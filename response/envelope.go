@@ -1,6 +1,3 @@
-// Package response provides the standard JSON envelope used by every
-// service in the XMart Cloud platform. All API responses are wrapped in a
-// Body struct so clients can rely on a single shape.
 package response
 
 import (
@@ -11,8 +8,6 @@ import (
 	"github.com/danixts/platform/logger"
 )
 
-// Body is the envelope returned by every handler. Data is omitted from the
-// JSON output when nil so error responses do not carry a null field.
 type Body struct {
 	Success bool   `json:"success"`
 	Code    int    `json:"code"`
@@ -20,8 +15,6 @@ type Body struct {
 	Data    any    `json:"data,omitempty"`
 }
 
-// ValidationBody is the envelope used for 422 responses with a list of
-// field-level validation errors.
 type ValidationBody struct {
 	Success bool     `json:"success"`
 	Code    int      `json:"code"`
@@ -29,32 +22,26 @@ type ValidationBody struct {
 	Errors  []string `json:"errors"`
 }
 
-// OK writes a 200 response with the given data and message.
 func OK(c fiber.Ctx, data any, message string) error {
 	return c.Status(fiber.StatusOK).JSON(Body{
 		Success: true, Code: fiber.StatusOK, Message: message, Data: data,
 	})
 }
 
-// Created writes a 201 response.
 func Created(c fiber.Ctx, data any, message string) error {
 	return c.Status(fiber.StatusCreated).JSON(Body{
 		Success: true, Code: fiber.StatusCreated, Message: message, Data: data,
 	})
 }
 
-// NoContent writes a 204 response with an empty Body. Fiber strips the body
-// automatically for 204 status.
 func NoContent(c fiber.Ctx) error {
 	return c.SendStatus(fiber.StatusNoContent)
 }
 
-// BadRequest writes a 400.
 func BadRequest(c fiber.Ctx, message string) error {
 	return fail(c, fiber.StatusBadRequest, message)
 }
 
-// Unauthorized writes a 401. An empty message defaults to "unauthorized".
 func Unauthorized(c fiber.Ctx, message string) error {
 	if message == "" {
 		message = "unauthorized"
@@ -62,12 +49,10 @@ func Unauthorized(c fiber.Ctx, message string) error {
 	return fail(c, fiber.StatusUnauthorized, message)
 }
 
-// Forbidden writes a 403.
 func Forbidden(c fiber.Ctx, message string) error {
 	return fail(c, fiber.StatusForbidden, message)
 }
 
-// NotFound writes a 404. An empty message defaults to "not_found".
 func NotFound(c fiber.Ctx, message string) error {
 	if message == "" {
 		message = "not_found"
@@ -75,12 +60,10 @@ func NotFound(c fiber.Ctx, message string) error {
 	return fail(c, fiber.StatusNotFound, message)
 }
 
-// Conflict writes a 409.
 func Conflict(c fiber.Ctx, message string) error {
 	return fail(c, fiber.StatusConflict, message)
 }
 
-// ValidationFail writes a 422 with a list of field-level errors.
 func ValidationFail(c fiber.Ctx, errs []string) error {
 	return c.Status(fiber.StatusUnprocessableEntity).JSON(ValidationBody{
 		Success: false,
@@ -90,9 +73,6 @@ func ValidationFail(c fiber.Ctx, errs []string) error {
 	})
 }
 
-// Internal writes a 500 response with a generic "internal_server_error"
-// message. If an error is passed, it is logged at Error level with the
-// request path and method — callers do not need a separate log line.
 func Internal(c fiber.Ctx, errs ...error) error {
 	if len(errs) > 0 && errs[0] != nil {
 		logger.Error().
@@ -110,8 +90,6 @@ func fail(c fiber.Ctx, code int, message string) error {
 	})
 }
 
-// Sentinel errors that services can return from their domain layer; the
-// FromErr helper maps them to the right HTTP status.
 var (
 	ErrNotFound     = errors.New("not_found")
 	ErrConflict     = errors.New("conflict")
@@ -128,9 +106,6 @@ var errorStatus = map[error]int{
 	ErrBadRequest:   fiber.StatusBadRequest,
 }
 
-// FromErr maps a domain error to the appropriate HTTP response. If the
-// error does not match any sentinel, a 500 is returned and the error is
-// logged.
 func FromErr(c fiber.Ctx, err error) error {
 	for sentinel, code := range errorStatus {
 		if errors.Is(err, sentinel) {

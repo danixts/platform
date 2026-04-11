@@ -8,13 +8,6 @@ import (
 	"github.com/danixts/platform/logger"
 )
 
-// AccessLog returns a Fiber handler that logs a single structured line
-// per request once the handler chain returns. It uses RequestIDFromContext
-// to include the request id and, when Tenant() ran earlier in the chain,
-// the account_uid / user_uid from the Identity.
-//
-// The log record is emitted at Info level via logger.Get(). Services that
-// want more customisation can write their own middleware and drop this one.
 func AccessLog() fiber.Handler {
 	return func(c fiber.Ctx) error {
 		start := time.Now()
