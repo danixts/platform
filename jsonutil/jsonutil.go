@@ -2,25 +2,33 @@ package jsonutil
 
 import "github.com/bytedance/sonic"
 
+// SensitiveKeys is the set of JSON field names that are always redacted
+// by Sanitize and SanitizeHeaders. It holds the generic credential-like
+// names that apply to almost any service.
+//
+// Services with domain-specific sensitive fields should extend this map
+// in an init() block at startup, for example:
+//
+//	func init() {
+//	    jsonutil.SensitiveKeys["my_custom_secret_field"] = true
+//	}
 var SensitiveKeys = map[string]bool{
-	"password":              true,
-	"Password":              true,
-	"userPassword":          true,
-	"userName":              true,
-	"authorizationId":       true,
-	"accountId":             true,
-	"apiKey":                true,
-	"apiKeyServicio":        true,
-	"Authorization":         true,
-	"authorization":         true,
-	"cert_passphrase":       true,
-	"certPassphrase":        true,
-	"public_token_enc":      true,
-	"bank_password_enc":     true,
-	"api_key_enc":           true,
-	"token":                 true,
-	"newAuthorizationId":    true,
-	"actualAuthorizationId": true,
+	"password":        true,
+	"Password":        true,
+	"userPassword":    true,
+	"apiKey":          true,
+	"api_key":         true,
+	"apikey":          true,
+	"Authorization":   true,
+	"authorization":   true,
+	"token":           true,
+	"access_token":    true,
+	"refresh_token":   true,
+	"secret":          true,
+	"client_secret":   true,
+	"private_key":     true,
+	"cert_passphrase": true,
+	"certPassphrase":  true,
 }
 
 const Redacted = "[REDACTED]"
