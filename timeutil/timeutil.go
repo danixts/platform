@@ -5,6 +5,12 @@ import (
 	"time"
 )
 
+var defaultLoc atomic.Pointer[time.Location]
+
+func init() {
+	defaultLoc.Store(time.UTC)
+}
+
 func Now() time.Time { return time.Now().UTC() }
 
 func NowRFC3339() string { return Now().Format(time.RFC3339) }
@@ -20,17 +26,11 @@ func Duration(sec int) time.Duration { return time.Duration(sec) * time.Second }
 func UTC(t time.Time) time.Time { return t.UTC() }
 
 func ParseRFC3339(s string) (time.Time, error) {
-	t, err := time.Parse(time.RFC3339, s)
+	parsed, err := time.Parse(time.RFC3339, s)
 	if err != nil {
 		return time.Time{}, err
 	}
-	return t.UTC(), nil
-}
-
-var defaultLoc atomic.Pointer[time.Location]
-
-func init() {
-	defaultLoc.Store(time.UTC)
+	return parsed.UTC(), nil
 }
 
 func DefaultLocation() *time.Location {

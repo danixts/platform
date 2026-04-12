@@ -28,7 +28,7 @@ type Config struct {
 }
 
 type Client struct {
-	cli        *awss3.Client
+	underlying *awss3.Client
 	bucket     string
 	prefix     string
 	cdnBaseURL string
@@ -68,7 +68,7 @@ func New(ctx context.Context, cfg Config) (*Client, error) {
 	}
 
 	return &Client{
-		cli:        awss3.NewFromConfig(awsCfg, s3Opts),
+		underlying: awss3.NewFromConfig(awsCfg, s3Opts),
 		bucket:     cfg.Bucket,
 		prefix:     strings.Trim(cfg.Prefix, "/"),
 		cdnBaseURL: strings.TrimRight(cfg.CDNBaseURL, "/"),
@@ -77,33 +77,33 @@ func New(ctx context.Context, cfg Config) (*Client, error) {
 	}, nil
 }
 
-func (c *Client) Raw() *awss3.Client { return c.cli }
+func (c *Client) Raw() *awss3.Client { return c.underlying }
 
 func (c *Client) Bucket() string { return c.bucket }
 
 func (c *Client) Put(ctx context.Context, key string, body []byte, contentType string) (string, error) {
-	full := c.JoinKey(key)
-	in := &awss3.PutObjectInput{
+	fullKey := c.JoinKey(key)
+	input := &awss3.PutObjectInput{
 		Bucket:      aws.String(c.bucket),
-		Key:         aws.String(full),
+		Key:         aws.String(fullKey),
 		Body:        bytes.NewReader(body),
 		ContentType: aws.String(contentType),
 	}
 	if c.aclPublic {
-		in.ACL = types.ObjectCannedACLPublicRead
-		in.ContentDisposition = aws.String("inline")
+		input.ACL = types.ObjectCannedACLPublicRead
+		input.ContentDisposition = aws.String("inline")
 	}
-	if _, err := c.cli.PutObject(ctx, in); err != nil {
+	if _, err := c.underlying.PutObject(ctx, input); err != nil {
 		return "", fmt.Errorf("s3 put: %w", err)
 	}
-	return c.PublicURL(full), nil
+	return c.PublicURL(fullKey), nil
 }
 
 func (c *Client) Delete(ctx context.Context, key string) error {
-	full := c.JoinKey(key)
-	_, err := c.cli.DeleteObject(ctx, &awss3.DeleteObjectInput{
+	fullKey := c.JoinKey(key)
+	_, err := c.underlying.DeleteObject(ctx, &awss3.DeleteObjectInput{
 		Bucket: aws.String(c.bucket),
-		Key:    aws.String(full),
+		Key:    aws.String(fullKey),
 	})
 	if err != nil {
 		return fmt.Errorf("s3 delete: %w", err)
@@ -112,11 +112,11 @@ func (c *Client) Delete(ctx context.Context, key string) error {
 }
 
 func (c *Client) PresignGet(ctx context.Context, key string, expires time.Duration) (string, error) {
-	full := c.JoinKey(key)
-	ps := awss3.NewPresignClient(c.cli)
-	req, err := ps.PresignGetObject(ctx, &awss3.GetObjectInput{
+	fullKey := c.JoinKey(key)
+	presign := awss3.NewPresignClient(c.underlying)
+	req, err := presign.PresignGetObject(ctx, &awss3.GetObjectInput{
 		Bucket: aws.String(c.bucket),
-		Key:    aws.String(full),
+		Key:    aws.String(fullKey),
 	}, awss3.WithPresignExpires(expires))
 	if err != nil {
 		return "", fmt.Errorf("s3 presign: %w", err)

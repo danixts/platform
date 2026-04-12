@@ -18,11 +18,11 @@ type Config struct {
 var log zerolog.Logger
 
 func Init(cfg Config) {
-	lvl, err := zerolog.ParseLevel(cfg.Level)
+	level, err := zerolog.ParseLevel(cfg.Level)
 	if err != nil || cfg.Level == "" {
-		lvl = zerolog.InfoLevel
+		level = zerolog.InfoLevel
 	}
-	zerolog.SetGlobalLevel(lvl)
+	zerolog.SetGlobalLevel(level)
 	zerolog.TimeFieldFormat = time.RFC3339
 
 	var out io.Writer = os.Stderr
@@ -33,11 +33,11 @@ func Init(cfg Config) {
 		out = zerolog.ConsoleWriter{Out: out, TimeFormat: time.RFC3339}
 	}
 
-	ctx := zerolog.New(out).With().Timestamp()
+	builder := zerolog.New(out).With().Timestamp()
 	if cfg.Service != "" {
-		ctx = ctx.Str("service", cfg.Service)
+		builder = builder.Str("service", cfg.Service)
 	}
-	log = ctx.Logger()
+	log = builder.Logger()
 }
 
 func Get() *zerolog.Logger { return &log }

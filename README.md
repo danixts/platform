@@ -31,7 +31,7 @@ response envelope, structured logging and a handful of utilities.
 | `cache/redis` | `go-redis/v9` wrapper covering strings, sets, TTL and ping. |
 | `queue/nats` | `nats.go` wrapper with `PublishJSON` (sonic) and queue subscriptions. |
 | `storage/s3` | `aws-sdk-go-v2/s3` wrapper for Put / Delete / Presign. Supports MinIO via endpoint override. |
-| `httpclient/resty` | `go-resty/v2` preconfigured with sonic, retry and a browser-like User-Agent. |
+| `httpclient/resty` | `go-resty/v2` with sonic, retries, fluent `Call` builder and JSON/form shortcuts. |
 | `timeutil` | UTC-first helpers and `LoadLocation` with a configurable default. |
 | `jsonutil` | sonic wrapper plus `Sanitize` / `SanitizeHeaders` for safe logging. |
 | `crypto/aesgcm` | AES-256-GCM AEAD keyed from a base64 32-byte secret. |
@@ -62,6 +62,38 @@ X-Request-Id         <id>
 Reject policy is configurable through `middleware.Options` — the default
 returns 401 when `X-Is-Valid != "true"`, `X-User-Uid` is missing or
 `X-Account-Uid` is missing.
+
+## HTTP client (`httpclient/resty`)
+
+`NewService` + `Call(ctx)` returns a fluent builder: chain `BearerToken` / `JSONDefaults` / `Header`… then a
+terminal verb (`Get`, `Post`, …). `New` is the bare configured `resty.Client`. `GetRequest` and friends are
+shortcuts for `Call` + defaults + verb; `*ExpectSuccess` helpers fail on non-2xx (`HTTPStatusCode`).
+
+```go
+import (
+    "context"
+    "os"
+
+    xresty "github.com/danixts/platform/httpclient/resty"
+)
+
+ctx := context.Background()
+api := xresty.NewService(xresty.Config{
+    BaseURL: os.Getenv("UPSTREAM_API_URL"),
+    Headers: map[string]string{"X-Api-Key": os.Getenv("API_KEY")},
+})
+
+var dto struct {
+    ID   string `json:"id"`
+    Name string `json:"name"`
+}
+if err := api.Call(ctx).BearerToken(os.Getenv("JWT")).JSONDefaults().Get("/v1/me", &dto); err != nil {
+    return err
+}
+if err := api.GetRequestExpectSuccess(ctx, "/v1/me", &dto); err != nil {
+    return err
+}
+```
 
 ## Quick start
 

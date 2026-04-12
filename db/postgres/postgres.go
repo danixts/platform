@@ -9,6 +9,14 @@ import (
 	gormlogger "gorm.io/gorm/logger"
 )
 
+const (
+	defaultMaxOpenConns    = 50
+	defaultMaxIdleConns    = 10
+	defaultConnMaxLifetime = 30 * time.Minute
+	defaultConnMaxIdleTime = 5 * time.Minute
+	defaultSlowThreshold   = 200 * time.Millisecond
+)
+
 type LogLevel int
 
 const (
@@ -76,22 +84,22 @@ func Close(db *gorm.DB) error {
 
 func applyDefaults(cfg *Config) {
 	if cfg.MaxOpenConns == 0 {
-		cfg.MaxOpenConns = 50
+		cfg.MaxOpenConns = defaultMaxOpenConns
 	}
 	if cfg.MaxIdleConns == 0 {
-		cfg.MaxIdleConns = 10
+		cfg.MaxIdleConns = defaultMaxIdleConns
 	}
 	if cfg.ConnMaxLifetime == 0 {
-		cfg.ConnMaxLifetime = 30 * time.Minute
+		cfg.ConnMaxLifetime = defaultConnMaxLifetime
 	}
 	if cfg.ConnMaxIdleTime == 0 {
-		cfg.ConnMaxIdleTime = 5 * time.Minute
+		cfg.ConnMaxIdleTime = defaultConnMaxIdleTime
 	}
 	if cfg.LogLevel == 0 {
 		cfg.LogLevel = LogWarn
 	}
 	if cfg.SlowThreshold == 0 {
-		cfg.SlowThreshold = 200 * time.Millisecond
+		cfg.SlowThreshold = defaultSlowThreshold
 	}
 	if cfg.PrepareStmt == nil {
 		t := true

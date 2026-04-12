@@ -22,6 +22,22 @@ type ValidationBody struct {
 	Errors  []string `json:"errors"`
 }
 
+var (
+	ErrNotFound     = errors.New("not_found")
+	ErrConflict     = errors.New("conflict")
+	ErrUnauthorized = errors.New("unauthorized")
+	ErrForbidden    = errors.New("forbidden")
+	ErrBadRequest   = errors.New("bad_request")
+)
+
+var errorStatus = map[error]int{
+	ErrNotFound:     fiber.StatusNotFound,
+	ErrConflict:     fiber.StatusConflict,
+	ErrUnauthorized: fiber.StatusUnauthorized,
+	ErrForbidden:    fiber.StatusForbidden,
+	ErrBadRequest:   fiber.StatusBadRequest,
+}
+
 func OK(c fiber.Ctx, data any, message string) error {
 	return c.Status(fiber.StatusOK).JSON(Body{
 		Success: true, Code: fiber.StatusOK, Message: message, Data: data,
@@ -84,28 +100,6 @@ func Internal(c fiber.Ctx, errs ...error) error {
 	return fail(c, fiber.StatusInternalServerError, "internal_server_error")
 }
 
-func fail(c fiber.Ctx, code int, message string) error {
-	return c.Status(code).JSON(Body{
-		Success: false, Code: code, Message: message, Data: nil,
-	})
-}
-
-var (
-	ErrNotFound     = errors.New("not_found")
-	ErrConflict     = errors.New("conflict")
-	ErrUnauthorized = errors.New("unauthorized")
-	ErrForbidden    = errors.New("forbidden")
-	ErrBadRequest   = errors.New("bad_request")
-)
-
-var errorStatus = map[error]int{
-	ErrNotFound:     fiber.StatusNotFound,
-	ErrConflict:     fiber.StatusConflict,
-	ErrUnauthorized: fiber.StatusUnauthorized,
-	ErrForbidden:    fiber.StatusForbidden,
-	ErrBadRequest:   fiber.StatusBadRequest,
-}
-
 func FromErr(c fiber.Ctx, err error) error {
 	for sentinel, code := range errorStatus {
 		if errors.Is(err, sentinel) {
@@ -113,4 +107,10 @@ func FromErr(c fiber.Ctx, err error) error {
 		}
 	}
 	return Internal(c, err)
+}
+
+func fail(c fiber.Ctx, code int, message string) error {
+	return c.Status(code).JSON(Body{
+		Success: false, Code: code, Message: message, Data: nil,
+	})
 }

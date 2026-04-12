@@ -10,11 +10,11 @@ import (
 
 func AccessLog() fiber.Handler {
 	return func(c fiber.Ctx) error {
-		start := time.Now()
+		requestStart := time.Now()
 		err := c.Next()
-		latency := time.Since(start)
+		latency := time.Since(requestStart)
 
-		ev := logger.Info().
+		logEvent := logger.Info().
 			Str("method", c.Method()).
 			Str("path", c.Path()).
 			Int("status", c.Response().StatusCode()).
@@ -24,12 +24,12 @@ func AccessLog() fiber.Handler {
 			Str("request_id", RequestIDFromContext(c))
 
 		if id, ok := c.Locals(identityKey{}).(*Identity); ok && id != nil {
-			ev = ev.Str("account_uid", id.AccountUID).Str("user_uid", id.UserUID)
+			logEvent = logEvent.Str("account_uid", id.AccountUID).Str("user_uid", id.UserUID)
 		}
 		if err != nil {
-			ev = ev.Err(err)
+			logEvent = logEvent.Err(err)
 		}
-		ev.Msg("http")
+		logEvent.Msg("http")
 		return err
 	}
 }

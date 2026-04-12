@@ -46,11 +46,11 @@ func (r *BaseRepo[T]) Save(ctx context.Context, entity *T) error {
 
 func (r *BaseRepo[T]) First(ctx context.Context, scopes ...Scope) (*T, error) {
 	var entity T
-	q := r.DB.WithContext(ctx)
-	for _, s := range scopes {
-		q = s(q)
+	query := r.DB.WithContext(ctx)
+	for _, scope := range scopes {
+		query = scope(query)
 	}
-	if err := q.First(&entity).Error; err != nil {
+	if err := query.First(&entity).Error; err != nil {
 		return nil, err
 	}
 	return &entity, nil
@@ -58,11 +58,11 @@ func (r *BaseRepo[T]) First(ctx context.Context, scopes ...Scope) (*T, error) {
 
 func (r *BaseRepo[T]) Find(ctx context.Context, scopes ...Scope) ([]*T, error) {
 	var entities []*T
-	q := r.DB.WithContext(ctx)
-	for _, s := range scopes {
-		q = s(q)
+	query := r.DB.WithContext(ctx)
+	for _, scope := range scopes {
+		query = scope(query)
 	}
-	if err := q.Find(&entities).Error; err != nil {
+	if err := query.Find(&entities).Error; err != nil {
 		return nil, err
 	}
 	return entities, nil
@@ -70,28 +70,28 @@ func (r *BaseRepo[T]) Find(ctx context.Context, scopes ...Scope) ([]*T, error) {
 
 func (r *BaseRepo[T]) Count(ctx context.Context, scopes ...Scope) (int64, error) {
 	var count int64
-	q := r.DB.WithContext(ctx).Model(new(T))
-	for _, s := range scopes {
-		q = s(q)
+	query := r.DB.WithContext(ctx).Model(new(T))
+	for _, scope := range scopes {
+		query = scope(query)
 	}
-	if err := q.Count(&count).Error; err != nil {
+	if err := query.Count(&count).Error; err != nil {
 		return 0, err
 	}
 	return count, nil
 }
 
 func (r *BaseRepo[T]) UpdateWhere(ctx context.Context, values any, scopes ...Scope) error {
-	q := r.DB.WithContext(ctx).Model(new(T))
-	for _, s := range scopes {
-		q = s(q)
+	query := r.DB.WithContext(ctx).Model(new(T))
+	for _, scope := range scopes {
+		query = scope(query)
 	}
-	return q.Updates(values).Error
+	return query.Updates(values).Error
 }
 
 func (r *BaseRepo[T]) DeleteWhere(ctx context.Context, scopes ...Scope) error {
-	q := r.DB.WithContext(ctx)
-	for _, s := range scopes {
-		q = s(q)
+	query := r.DB.WithContext(ctx)
+	for _, scope := range scopes {
+		query = scope(query)
 	}
-	return q.Delete(new(T)).Error
+	return query.Delete(new(T)).Error
 }

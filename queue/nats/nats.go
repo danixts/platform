@@ -8,6 +8,11 @@ import (
 	gonats "github.com/nats-io/nats.go"
 )
 
+const (
+	defaultClientName    = "platform-service"
+	defaultReconnectWait = 2 * time.Second
+)
+
 type Config struct {
 	URL           string
 	Name          string
@@ -19,7 +24,7 @@ type Config struct {
 type Handler func(subject string, data []byte)
 
 type Client struct {
-	conn       *gonats.Conn
+	underlying *gonats.Conn
 	queueGroup string
 }
 
@@ -28,16 +33,16 @@ func New(cfg Config) (*Client, error) {
 		return nil, fmt.Errorf("platform/queue/nats: empty URL")
 	}
 	if cfg.Name == "" {
-		cfg.Name = "platform-service"
+		cfg.Name = defaultClientName
 	}
 	if cfg.MaxReconnects == 0 {
 		cfg.MaxReconnects = -1
 	}
 	if cfg.ReconnectWait == 0 {
-		cfg.ReconnectWait = 2 * time.Second
+		cfg.ReconnectWait = defaultReconnectWait
 	}
 
-	conn, err := gonats.Connect(cfg.URL,
+	underlying, err := gonats.Connect(cfg.URL,
 		gonats.Name(cfg.Name),
 		gonats.RetryOnFailedConnect(true),
 		gonats.MaxReconnects(cfg.MaxReconnects),
@@ -46,24 +51,24 @@ func New(cfg Config) (*Client, error) {
 	if err != nil {
 		return nil, fmt.Errorf("connect nats: %w", err)
 	}
-	return &Client{conn: conn, queueGroup: cfg.QueueGroup}, nil
+	return &Client{underlying: underlying, queueGroup: cfg.QueueGroup}, nil
 }
 
-func (c *Client) Raw() *gonats.Conn { return c.conn }
+func (c *Client) Raw() *gonats.Conn { return c.underlying }
 
 func (c *Client) IsConnected() bool {
-	return c.conn != nil && c.conn.IsConnected()
+	return c.underlying != nil && c.underlying.IsConnected()
 }
 
 func (c *Client) Close() {
-	if c.conn == nil {
+	if c.underlying == nil {
 		return
 	}
-	_ = c.conn.Drain()
+	_ = c.underlying.Drain()
 }
 
 func (c *Client) Publish(subject string, data []byte) error {
-	return c.conn.Publish(subject, data)
+	return c.underlying.Publish(subject, data)
 }
 
 func (c *Client) PublishJSON(subject string, v any) error {
@@ -71,12 +76,12 @@ func (c *Client) PublishJSON(subject string, v any) error {
 	if err != nil {
 		return fmt.Errorf("marshal nats payload: %w", err)
 	}
-	return c.conn.Publish(subject, payload)
+	return c.underlying.Publish(subject, payload)
 }
 
 func (c *Client) Subscribe(subject string, h Handler) error {
 	if c.queueGroup == "" {
-		_, err := c.conn.Subscribe(subject, func(m *gonats.Msg) {
+		_, err := c.underlying.Subscribe(subject, func(m *gonats.Msg) {
 			h(m.Subject, m.Data)
 		})
 		return err
@@ -85,7 +90,7 @@ func (c *Client) Subscribe(subject string, h Handler) error {
 }
 
 func (c *Client) QueueSubscribe(subject, queueGroup string, h Handler) error {
-	_, err := c.conn.QueueSubscribe(subject, queueGroup, func(m *gonats.Msg) {
+	_, err := c.underlying.QueueSubscribe(subject, queueGroup, func(m *gonats.Msg) {
 		h(m.Subject, m.Data)
 	})
 	return err

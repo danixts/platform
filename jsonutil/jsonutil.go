@@ -2,6 +2,8 @@ package jsonutil
 
 import "github.com/bytedance/sonic"
 
+const Redacted = "[REDACTED]"
+
 var SensitiveKeys = map[string]bool{
 	"password":        true,
 	"Password":        true,
@@ -20,8 +22,6 @@ var SensitiveKeys = map[string]bool{
 	"cert_passphrase": true,
 	"certPassphrase":  true,
 }
-
-const Redacted = "[REDACTED]"
 
 func Sanitize(v any) any {
 	if v == nil {

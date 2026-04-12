@@ -7,9 +7,9 @@ import (
 	"github.com/gofiber/fiber/v3"
 )
 
-type identityKey struct{}
-
 var ErrNoIdentity = errors.New("platform/middleware: no identity in context (Tenant middleware not in chain)")
+
+type identityKey struct{}
 
 type Options struct {
 	RequireValid   bool
