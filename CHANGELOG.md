@@ -5,6 +5,20 @@ All notable changes to platform will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/)
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## 1.0.0 (2026-04-12)
+
+
+### Features
+
+* **db/postgres:** add generic BaseRepo with Scope combinators ([11ed327](https://github.com/danixts/platform/commit/11ed327e96225f5fff2e66531f066af3462b960b))
+* initial xmart-platform SDK bootstrap ([62311cf](https://github.com/danixts/platform/commit/62311cf28caa9ac51010699c9ab8adea4e0b7a45))
+* rename module to platform, add requestid/accesslog/recover middlewares ([d461617](https://github.com/danixts/platform/commit/d4616179e39272cd0393e1b7eb75d3a5a64eb753))
+
+
+### Refactor
+
+* **db/postgres:** streamline BaseRepo and remove redundant comments ([6f84b94](https://github.com/danixts/platform/commit/6f84b94b3d4d8740cea17c7352c37d639af57cb0))
+
 ## [Unreleased]
 
 ### Added
