@@ -89,6 +89,7 @@ func parseIdentity(c fiber.Ctx) *Identity {
 		Timezone:       c.Get(HeaderTimezone),
 		TimezoneOffset: c.Get(HeaderTimezoneOffset),
 		AccountUID:     c.Get(HeaderAccountUID),
+		OrgUID:         c.Get(HeaderOrgUID),
 		ProductSlugs:   parseCSV(c.Get(HeaderProductSlugs)),
 		RequestID:      c.Get(HeaderRequestID),
 	}

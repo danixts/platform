@@ -13,6 +13,7 @@ const (
 	HeaderTimezone       = "X-Timezone"
 	HeaderTimezoneOffset = "X-Timezone-Offset"
 	HeaderAccountUID     = "X-Account-Uid"
+	HeaderOrgUID         = "X-Org-Uid"
 	HeaderProductSlugs   = "X-Product-Slugs"
 	HeaderRequestID      = "X-Request-Id"
 )

@@ -15,6 +15,7 @@ type Identity struct {
 	Timezone       string
 	TimezoneOffset string
 	AccountUID     string
+	OrgUID         string
 	ProductSlugs   []string
 	RequestID      string
 }
