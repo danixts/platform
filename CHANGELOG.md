@@ -5,6 +5,18 @@ All notable changes to platform will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/)
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.1.0](https://github.com/danixts/platform/compare/v1.0.0...v1.1.0) (2026-04-16)
+
+
+### Features
+
+* **canonical:** add canonical channel schema package ([713f9a8](https://github.com/danixts/platform/commit/713f9a85bcd2ff28e98ea4f45759b280ae68bdca))
+
+
+### Refactor
+
+* **canonical:** update OutboundMessage struct to include Contact field ([b66a4a5](https://github.com/danixts/platform/commit/b66a4a5bafa824b6e277ee31018adcf5ec760f11))
+
 ## 1.0.0 (2026-04-12)
 
 
