@@ -25,7 +25,7 @@ const (
 
 // TextBlock renders a text message.
 type TextBlock struct {
-	Type       string `json:"type"`               // "text"
+	Type       string `json:"type"` // "text"
 	Content    string `json:"content"`
 	Formatting string `json:"formatting,omitempty"` // "markdown" | "plain"
 }
