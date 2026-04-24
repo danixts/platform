@@ -5,6 +5,13 @@ All notable changes to platform will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/)
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.4.0](https://github.com/danixts/platform/compare/v1.3.0...v1.4.0) (2026-04-24)
+
+
+### Features
+
+* **middleware:** add SetIdentity for services with custom gateway headers ([9f52457](https://github.com/danixts/platform/commit/9f5245736798c0548a90fd0433c5510f5a9492e5))
+
 ## [1.3.0](https://github.com/danixts/platform/compare/v1.2.1...v1.3.0) (2026-04-24)
 
 
