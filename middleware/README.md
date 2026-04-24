@@ -69,6 +69,34 @@ id.IsAuthenticated()      // IsValid && UserUID != ""
 id.HasProduct("billing")  // verifica slug en ProductSlugs
 ```
 
+## Servicios con headers custom (gateway propio)
+
+Si el gateway inyecta headers distintos a los X-* estándar, usá `SetIdentity` en tu middleware propio para poblar el contexto y poder usar todos los getters del SDK:
+
+```go
+// middleware propio del servicio
+func Tenant() fiber.Handler {
+    return func(c fiber.Ctx) error {
+        uid := c.Get("x-user-id")
+        accountUID := c.Get("x-account-id")
+        // validaciones...
+
+        middleware.SetIdentity(c, &middleware.Identity{
+            IsValid:    true,
+            UserUID:    uid,
+            AccountUID: accountUID,
+            Role:       c.Get("x-role"),
+            Timezone:   c.Get("x-timezone"),
+        })
+        return c.Next()
+    }
+}
+
+// en handlers, los getters del SDK funcionan igual
+uid := middleware.GetUserUID(c)
+org := middleware.GetAccountUID(c)
+```
+
 ## Request ID standalone
 
 Si no usás `Tenant`, el request ID está disponible por separado:

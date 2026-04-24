@@ -12,6 +12,10 @@ func FromContext(c fiber.Ctx) (*Identity, error) {
 	return id, nil
 }
 
+func SetIdentity(c fiber.Ctx, id *Identity) {
+	c.Locals(identityKey{}, id)
+}
+
 func MustFromContext(c fiber.Ctx) *Identity {
 	id, err := FromContext(c)
 	if err != nil {
