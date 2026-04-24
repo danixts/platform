@@ -18,6 +18,10 @@ type Client struct {
 	httpClient *http.Client
 }
 
+func closeBody(c io.Closer) {
+	_ = c.Close()
+}
+
 func New(cfg Config) *Client {
 	timeout := cfg.Timeout
 	if timeout == 0 {
@@ -71,7 +75,7 @@ func (c *Client) Upload(ctx context.Context, filename string, content io.Reader,
 	if err != nil {
 		return nil, fmt.Errorf("media upload: http: %w", err)
 	}
-	defer resp.Body.Close()
+	defer closeBody(resp.Body)
 
 	if resp.StatusCode >= 400 {
 		body, _ := io.ReadAll(io.LimitReader(resp.Body, 512))
@@ -96,7 +100,7 @@ func (c *Client) Get(ctx context.Context, accountUID, uid string) (*MediaResp, e
 	if err != nil {
 		return nil, fmt.Errorf("media get: http: %w", err)
 	}
-	defer resp.Body.Close()
+	defer closeBody(resp.Body)
 
 	if resp.StatusCode == http.StatusNotFound {
 		return nil, nil
@@ -124,7 +128,7 @@ func (c *Client) Delete(ctx context.Context, accountUID, uid string) error {
 	if err != nil {
 		return fmt.Errorf("media delete: http: %w", err)
 	}
-	defer resp.Body.Close()
+	defer closeBody(resp.Body)
 
 	if resp.StatusCode >= 400 {
 		body, _ := io.ReadAll(io.LimitReader(resp.Body, 512))
