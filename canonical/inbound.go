@@ -15,7 +15,8 @@ type InboundEvent struct {
 	SchemaVersion string          `json:"schema_version"`
 	MessageUID    string          `json:"message_uid"` // UUID v7
 	Provider      Provider        `json:"provider"`
-	SessionUID    string          `json:"session_uid"` // phone number or session identifier
+	Channel       string          `json:"channel,omitempty"` // sub-channel: whatsapp|messenger|instagram
+	SessionUID    string          `json:"session_uid"`
 	Contact       Contact         `json:"contact"`
 	ReceivedAt    string          `json:"received_at"` // ISO 8601 UTC
 	Event         json.RawMessage `json:"event"`       // discriminated by event.type
