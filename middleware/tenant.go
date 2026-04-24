@@ -9,21 +9,6 @@ import (
 
 var ErrNoIdentity = errors.New("platform/middleware: no identity in context (Tenant middleware not in chain)")
 
-type identityKey struct{}
-
-type Options struct {
-	RequireValid   bool
-	RequireAccount bool
-	OnReject       func(c fiber.Ctx, reason string) error
-}
-
-func DefaultOptions() Options {
-	return Options{
-		RequireValid:   true,
-		RequireAccount: true,
-	}
-}
-
 func Tenant(opts ...Options) fiber.Handler {
 	o := DefaultOptions()
 	if len(opts) > 0 {
@@ -51,29 +36,6 @@ func Tenant(opts ...Options) fiber.Handler {
 		return c.Next()
 	}
 }
-
-func FromContext(c fiber.Ctx) (*Identity, error) {
-	id, ok := c.Locals(identityKey{}).(*Identity)
-	if !ok || id == nil {
-		return nil, ErrNoIdentity
-	}
-	return id, nil
-}
-
-func MustFromContext(c fiber.Ctx) *Identity {
-	id, err := FromContext(c)
-	if err != nil {
-		panic(err)
-	}
-	return id
-}
-
-func GetIdentity(c fiber.Ctx) *Identity { return MustFromContext(c) }
-
-func GetAccountUID(c fiber.Ctx) string { return MustFromContext(c).AccountUID }
-func GetUserUID(c fiber.Ctx) string    { return MustFromContext(c).UserUID }
-func GetTimezone(c fiber.Ctx) string   { return MustFromContext(c).Timezone }
-func GetRole(c fiber.Ctx) string       { return MustFromContext(c).Role }
 
 func parseIdentity(c fiber.Ctx) *Identity {
 	return &Identity{

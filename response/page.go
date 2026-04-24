@@ -1,5 +1,7 @@
 package response
 
+import "github.com/gofiber/fiber/v3"
+
 type Page[T any] struct {
 	Items      []T   `json:"items"`
 	Page       int   `json:"page"`
@@ -26,4 +28,10 @@ func NewPage[T any](items []T, page, pageSize int, total int64) Page[T] {
 		Total:      total,
 		TotalPages: totalPages,
 	}
+}
+
+func OKPage[T any](c fiber.Ctx, page Page[T], message string) error {
+	return c.Status(fiber.StatusOK).JSON(Body{
+		Success: true, Code: fiber.StatusOK, Message: message, Data: page,
+	})
 }
