@@ -80,6 +80,13 @@ func Conflict(c fiber.Ctx, message string) error {
 	return fail(c, fiber.StatusConflict, message)
 }
 
+func TooManyRequests(c fiber.Ctx, message string) error {
+	if message == "" {
+		message = "too_many_requests"
+	}
+	return fail(c, fiber.StatusTooManyRequests, message)
+}
+
 func ValidationFail(c fiber.Ctx, errs []string) error {
 	return c.Status(fiber.StatusUnprocessableEntity).JSON(ValidationBody{
 		Success: false,
