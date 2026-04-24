@@ -5,6 +5,13 @@ All notable changes to platform will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/)
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.5.0](https://github.com/danixts/platform/compare/v1.4.0...v1.5.0) (2026-04-24)
+
+
+### Features
+
+* **response:** add TooManyRequests helper for handling 429 status ([b7b4111](https://github.com/danixts/platform/commit/b7b4111767bee4caeafc62a2fdad8c11ab995e54))
+
 ## [1.4.0](https://github.com/danixts/platform/compare/v1.3.0...v1.4.0) (2026-04-24)
 
 
