@@ -5,6 +5,7 @@ type OutboundMessage struct {
 	MessageUID       string   `json:"message_uid"`
 	SessionUID       string   `json:"session_uid"`
 	Provider         Provider `json:"provider"`
+	Channel          string   `json:"channel,omitempty"`
 	Contact          Contact  `json:"contact"`
 	Blocks           []Block  `json:"blocks"`
 	RequiresTemplate bool     `json:"requires_template"`
