@@ -5,6 +5,31 @@ All notable changes to platform will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/)
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.7.0](https://github.com/danixts/platform/compare/v1.6.0...v1.7.0) (2026-04-25)
+
+
+### Features
+
+* **canonical:** add canonical channel schema package ([713f9a8](https://github.com/danixts/platform/commit/713f9a85bcd2ff28e98ea4f45759b280ae68bdca))
+* **canonical:** add Channel field to InboundEvent ([385875b](https://github.com/danixts/platform/commit/385875b9ef4b4ba7f40f1af922eecd78152c6e1e))
+* **canonical:** add Channel field to OutboundMessage ([9e50908](https://github.com/danixts/platform/commit/9e50908f8e7c87a7e13e7eb612e072c611d37ac2))
+* **db/postgres:** add generic BaseRepo with Scope combinators ([11ed327](https://github.com/danixts/platform/commit/11ed327e96225f5fff2e66531f066af3462b960b))
+* initial xmart-platform SDK bootstrap ([62311cf](https://github.com/danixts/platform/commit/62311cf28caa9ac51010699c9ab8adea4e0b7a45))
+* **middleware:** add OrgUID to Identity and X-Org-Uid header ([8e27aed](https://github.com/danixts/platform/commit/8e27aedc1b598d4ef88a36ece470b4ae9a7ec595))
+* **middleware:** add SetIdentity for services with custom gateway headers ([9f52457](https://github.com/danixts/platform/commit/9f5245736798c0548a90fd0433c5510f5a9492e5))
+* **middleware:** extract context getters and Options to separate files ([d8f20bb](https://github.com/danixts/platform/commit/d8f20bb09328e4dd5ed686ceb4d62fe78d941f0a))
+* **nats:** add req/reply, SubscribeJSON, Call and Reply helpers ([d8f20bb](https://github.com/danixts/platform/commit/d8f20bb09328e4dd5ed686ceb4d62fe78d941f0a))
+* rename module to platform, add requestid/accesslog/recover middlewares ([d461617](https://github.com/danixts/platform/commit/d4616179e39272cd0393e1b7eb75d3a5a64eb753))
+* **response:** add OKPage helper for paginated responses ([d8f20bb](https://github.com/danixts/platform/commit/d8f20bb09328e4dd5ed686ceb4d62fe78d941f0a))
+* **response:** add TooManyRequests helper for handling 429 status ([b7b4111](https://github.com/danixts/platform/commit/b7b4111767bee4caeafc62a2fdad8c11ab995e54))
+
+
+### Refactor
+
+* **canonical:** update OutboundMessage struct to include Contact field ([b66a4a5](https://github.com/danixts/platform/commit/b66a4a5bafa824b6e277ee31018adcf5ec760f11))
+* **db/postgres:** streamline BaseRepo and remove redundant comments ([6f84b94](https://github.com/danixts/platform/commit/6f84b94b3d4d8740cea17c7352c37d639af57cb0))
+* **media:** introduce closeBody function for response body management ([044cad4](https://github.com/danixts/platform/commit/044cad4190645db84db64f183fa21ff559b0a7c2))
+
 ## [1.6.0](https://github.com/danixts/platform/compare/v1.5.0...v1.6.0) (2026-04-25)
 
 
