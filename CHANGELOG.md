@@ -5,6 +5,14 @@ All notable changes to platform will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/)
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.6.0](https://github.com/danixts/platform/compare/v1.5.0...v1.6.0) (2026-04-25)
+
+
+### Features
+
+* **canonical:** add Channel field to InboundEvent ([385875b](https://github.com/danixts/platform/commit/385875b9ef4b4ba7f40f1af922eecd78152c6e1e))
+* **canonical:** add Channel field to OutboundMessage ([9e50908](https://github.com/danixts/platform/commit/9e50908f8e7c87a7e13e7eb612e072c611d37ac2))
+
 ## [1.5.0](https://github.com/danixts/platform/compare/v1.4.0...v1.5.0) (2026-04-24)
 
 
