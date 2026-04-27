@@ -65,7 +65,7 @@ type Result struct {
 	Limit   int
 	Sort    string // canonical SQL form, safe for gorm.Order()
 	Search  string
-	Filters map[string]string
+	Filters map[string]any
 }
 
 // Parse extracts page/limit/sort/q + whitelisted filters from the request.
@@ -79,7 +79,7 @@ func Parse(c fiber.Ctx, spec Spec) Result {
 		Limit:   limit,
 		Sort:    ResolveSort(c, spec.AllowedSorts, spec.DefaultSort),
 		Search:  strings.TrimSpace(c.Query("q")),
-		Filters: map[string]string{},
+		Filters: map[string]any{},
 	}
 	for _, k := range spec.AllowedFilters {
 		if v := strings.TrimSpace(c.Query(k)); v != "" {
