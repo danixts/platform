@@ -14,8 +14,9 @@ import (
 )
 
 type Client struct {
-	baseURL    string
-	httpClient *http.Client
+	baseURL     string
+	httpClient  *http.Client
+	syncClient  *http.Client
 }
 
 func closeBody(c io.Closer) {
@@ -27,9 +28,18 @@ func New(cfg Config) *Client {
 	if timeout == 0 {
 		timeout = 15 * time.Second
 	}
+	syncTimeout := cfg.SyncTimeout
+	if syncTimeout == 0 {
+		// Default: server tope ~30s; damos 60s para cubrir red + retry interno.
+		syncTimeout = 60 * time.Second
+		if timeout > syncTimeout {
+			syncTimeout = timeout
+		}
+	}
 	return &Client{
 		baseURL:    strings.TrimRight(cfg.BaseURL, "/"),
 		httpClient: &http.Client{Timeout: timeout},
+		syncClient: &http.Client{Timeout: syncTimeout},
 	}
 }
 
@@ -57,6 +67,9 @@ func (c *Client) Upload(ctx context.Context, filename string, content io.Reader,
 	if len(opts.Tags) > 0 {
 		fields["tags"] = strings.Join(opts.Tags, ",")
 	}
+	if opts.WaitForProcessed {
+		fields["wait"] = "true"
+	}
 	for k, v := range fields {
 		if v != "" {
 			_ = w.WriteField(k, v)
@@ -71,7 +84,11 @@ func (c *Client) Upload(ctx context.Context, filename string, content io.Reader,
 	req.Header.Set("Content-Type", w.FormDataContentType())
 	req.Header.Set("x-account-id", opts.AccountUID)
 
-	resp, err := c.httpClient.Do(req)
+	httpClient := c.httpClient
+	if opts.WaitForProcessed {
+		httpClient = c.syncClient
+	}
+	resp, err := httpClient.Do(req)
 	if err != nil {
 		return nil, fmt.Errorf("media upload: http: %w", err)
 	}
