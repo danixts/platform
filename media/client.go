@@ -14,9 +14,9 @@ import (
 )
 
 type Client struct {
-	baseURL     string
-	httpClient  *http.Client
-	syncClient  *http.Client
+	baseURL    string
+	httpClient *http.Client
+	syncClient *http.Client
 }
 
 func closeBody(c io.Closer) {

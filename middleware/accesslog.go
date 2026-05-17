@@ -13,16 +13,16 @@ import (
 // kubelet and Prometheus scrapes /metrics every 30s — logging each request
 // floods the logs without adding diagnostic value.
 var silentPaths = map[string]struct{}{
-	"/":                    {},
-	"/health":              {},
-	"/healthz":             {},
-	"/ready":               {},
-	"/readyz":              {},
-	"/metrics":             {},
-	"/api/v1/health":       {},
-	"/api/v1/healthz":      {},
-	"/api/v1/ready":        {},
-	"/api/v1/readyz":       {},
+	"/":               {},
+	"/health":         {},
+	"/healthz":        {},
+	"/ready":          {},
+	"/readyz":         {},
+	"/metrics":        {},
+	"/api/v1/health":  {},
+	"/api/v1/healthz": {},
+	"/api/v1/ready":   {},
+	"/api/v1/readyz":  {},
 }
 
 func AccessLog() fiber.Handler {

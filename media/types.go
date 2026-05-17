@@ -32,9 +32,9 @@ type VariantResp struct {
 }
 
 type MediaResp struct {
-	UID           string        `json:"uid"`
-	URL           string        `json:"url"`
-	BlurHash      string        `json:"blurhash,omitempty"`
+	UID      string `json:"uid"`
+	URL      string `json:"url"`
+	BlurHash string `json:"blurhash,omitempty"`
 	// DominantColor: deprecated en favor de Palette[0]; se mantiene por compat.
 	DominantColor string        `json:"dominant_color,omitempty"`
 	Palette       []string      `json:"palette,omitempty"`
