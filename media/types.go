@@ -13,6 +13,7 @@ type Config struct {
 
 type UploadOptions struct {
 	AccountUID       string
+	UserUID          string
 	Bucket           string
 	Service          string
 	EntityType       string

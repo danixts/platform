@@ -82,7 +82,10 @@ func (c *Client) Upload(ctx context.Context, filename string, content io.Reader,
 		return nil, fmt.Errorf("media upload: build request: %w", err)
 	}
 	req.Header.Set("Content-Type", w.FormDataContentType())
-	req.Header.Set("x-account-id", opts.AccountUID)
+	req.Header.Set("x-account-uid", opts.AccountUID)
+	if opts.UserUID != "" {
+		req.Header.Set("x-user-uid", opts.UserUID)
+	}
 
 	httpClient := c.httpClient
 	if opts.WaitForProcessed {
@@ -111,7 +114,7 @@ func (c *Client) Get(ctx context.Context, accountUID, uid string) (*MediaResp, e
 	if err != nil {
 		return nil, fmt.Errorf("media get: %w", err)
 	}
-	req.Header.Set("x-account-id", accountUID)
+	req.Header.Set("x-account-uid", accountUID)
 
 	resp, err := c.httpClient.Do(req)
 	if err != nil {
@@ -139,7 +142,7 @@ func (c *Client) Delete(ctx context.Context, accountUID, uid string) error {
 	if err != nil {
 		return fmt.Errorf("media delete: %w", err)
 	}
-	req.Header.Set("x-account-id", accountUID)
+	req.Header.Set("x-account-uid", accountUID)
 
 	resp, err := c.httpClient.Do(req)
 	if err != nil {
