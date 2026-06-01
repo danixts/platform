@@ -1,6 +1,7 @@
 package middleware
 
 import (
+	"bytes"
 	"time"
 
 	"github.com/gofiber/fiber/v3"
@@ -47,11 +48,20 @@ func AccessLog() fiber.Handler {
 			}
 		}
 
+		// For a streaming response (SSE) the body is written incrementally after
+		// this middleware returns; Response().Body() would materialize the whole
+		// stream and block forever, so the client never receives anything. Skip
+		// the size read for text/event-stream.
+		size := 0
+		if !bytes.Contains(c.Response().Header.ContentType(), []byte("text/event-stream")) {
+			size = len(c.Response().Body())
+		}
+
 		logEvent := logger.Info().
 			Str("method", c.Method()).
 			Str("path", c.Path()).
 			Int("status", status).
-			Int("size", len(c.Response().Body())).
+			Int("size", size).
 			Str("ip", c.IP()).
 			Dur("latency", latency).
 			Str("request_id", RequestIDFromContext(c))
