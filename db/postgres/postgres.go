@@ -102,7 +102,10 @@ func applyDefaults(cfg *Config) {
 		cfg.SlowThreshold = defaultSlowThreshold
 	}
 	if cfg.PrepareStmt == nil {
-		t := true
-		cfg.PrepareStmt = &t
+		// Default off: server-side prepared statements break under PgBouncer
+		// transaction mode. Services that pool through pgbouncer-tx are safe by
+		// default; set PrepareStmt=&true explicitly to opt back in (session mode).
+		f := false
+		cfg.PrepareStmt = &f
 	}
 }
