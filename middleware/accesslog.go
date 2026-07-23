@@ -2,6 +2,7 @@ package middleware
 
 import (
 	"bytes"
+	"errors"
 	"time"
 
 	"github.com/gofiber/fiber/v3"
@@ -37,15 +38,13 @@ func AccessLog() fiber.Handler {
 		latency := time.Since(requestStart)
 
 		// If the handler returned an error but the ErrorHandler hasn't yet
-		// written the status code, derive the real status from the fiber.Error
-		// so the log doesn't show status=200 with error="<something>".
+		// written the status code, derive the real status from the error so the
+		// log doesn't show status=200 with error="<something>". Domain errors
+		// carry their own status: without asking them, a 422 or a 409 gets logged
+		// as 500 and reads like a server fault when hunting a bug.
 		status := c.Response().StatusCode()
 		if err != nil && status < 400 {
-			if fe, ok := err.(*fiber.Error); ok {
-				status = fe.Code
-			} else {
-				status = fiber.StatusInternalServerError
-			}
+			status = statusFromError(err)
 		}
 
 		// For a streaming response (SSE) the body is written incrementally after
@@ -75,4 +74,23 @@ func AccessLog() fiber.Handler {
 		logEvent.Msg("http")
 		return err
 	}
+}
+
+// httpStatuser is implemented by domain errors that already know which HTTP
+// status they map to. Kept as an interface so services keep their own error
+// types without this package importing any of them.
+type httpStatuser interface{ HTTPStatus() int }
+
+func statusFromError(err error) int {
+	var fe *fiber.Error
+	if errors.As(err, &fe) {
+		return fe.Code
+	}
+	var hs httpStatuser
+	if errors.As(err, &hs) {
+		if code := hs.HTTPStatus(); code >= 100 {
+			return code
+		}
+	}
+	return fiber.StatusInternalServerError
 }
