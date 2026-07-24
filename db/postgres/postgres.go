@@ -2,6 +2,8 @@ package postgres
 
 import (
 	"fmt"
+	"log"
+	"os"
 	"time"
 
 	"gorm.io/driver/postgres"
@@ -43,13 +45,23 @@ func New(cfg Config) (*gorm.DB, error) {
 	}
 	applyDefaults(&cfg)
 
+	// A plain LogMode keeps GORM's default slow threshold and logs every
+	// ErrRecordNotFound. The first ignores the configured SlowThreshold; the
+	// second floods logs with benign "record not found" from optional lookups.
+	gormLog := gormlogger.New(
+		log.New(os.Stdout, "", log.LstdFlags),
+		gormlogger.Config{
+			SlowThreshold:             cfg.SlowThreshold,
+			LogLevel:                  gormlogger.LogLevel(cfg.LogLevel),
+			IgnoreRecordNotFoundError: true,
+		},
+	)
+
 	db, err := gorm.Open(postgres.Open(cfg.DSN), &gorm.Config{
 		NowFunc:        func() time.Time { return time.Now().UTC() },
 		PrepareStmt:    *cfg.PrepareStmt,
 		TranslateError: true,
-		Logger: gormlogger.Default.LogMode(
-			gormlogger.LogLevel(cfg.LogLevel),
-		),
+		Logger:         gormLog,
 	})
 	if err != nil {
 		return nil, fmt.Errorf("open postgres: %w", err)
