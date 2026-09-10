@@ -24,10 +24,11 @@ type InboundEvent struct {
 
 // EventType constants.
 const (
-	EventTypeMessage = "message"
-	EventTypeAction  = "action"
-	EventTypeMedia   = "media"
-	EventTypeStatus  = "status"
+	EventTypeMessage      = "message"
+	EventTypeAction       = "action"
+	EventTypeMedia        = "media"
+	EventTypeStatus       = "status"
+	EventTypeFlowResponse = "flow_response"
 )
 
 // MessageEvent represents a plain-text or rich-text inbound message.
@@ -56,4 +57,17 @@ type StatusEvent struct {
 	Type      string `json:"type"`
 	Status    string `json:"status"` // "delivered" | "read" | "failed"
 	MessageID string `json:"message_id"`
+}
+
+// FlowResponseEvent represents a completed WhatsApp Flow submission.
+// CorrelationToken echoes the one the connector sent in the outbound
+// FlowBlock, so the bot can resolve which conversation and node was waiting
+// for it. Fields holds the flow's screen data already parsed by the
+// connector; RawResponse keeps the untouched payload for debugging.
+type FlowResponseEvent struct {
+	Type             string          `json:"type"`
+	CorrelationToken string          `json:"correlation_token"`
+	FlowID           string          `json:"flow_id"`
+	Fields           map[string]any  `json:"fields"`
+	RawResponse      json.RawMessage `json:"raw_response,omitempty"`
 }

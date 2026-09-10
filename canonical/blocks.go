@@ -21,6 +21,7 @@ const (
 	BlockTypeCTAURL          = "cta_url"
 	BlockTypeQuickReplies    = "quick_replies"
 	BlockTypeForm            = "form"
+	BlockTypeFlow            = "flow"
 )
 
 // TextBlock renders a text message.
@@ -84,6 +85,22 @@ type CTAURLBlock struct {
 	Type  string `json:"type"` // "cta_url"
 	Label string `json:"label"`
 	URL   string `json:"url"`
+}
+
+// FlowBlock renders a WhatsApp Flow (native form with a button that opens it).
+// FallbackText is what non-Meta channels show instead, since only the Meta
+// Cloud API path can render a native Flow.
+type FlowBlock struct {
+	Type             string         `json:"type"` // "flow"
+	FlowID           string         `json:"flow_id"`
+	CorrelationToken string         `json:"correlation_token"`
+	Screen           string         `json:"screen,omitempty"`
+	ButtonLabel      string         `json:"button_label"`
+	Body             string         `json:"body"`
+	Header           string         `json:"header,omitempty"`
+	Footer           string         `json:"footer,omitempty"`
+	InitialData      map[string]any `json:"initial_data,omitempty"`
+	FallbackText     string         `json:"fallback_text"`
 }
 
 // MustMarshalBlock marshals any typed block to json.RawMessage for use in OutboundMessage.Blocks.
