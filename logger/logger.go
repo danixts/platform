@@ -23,7 +23,10 @@ func Init(cfg Config) {
 		level = zerolog.InfoLevel
 	}
 	zerolog.SetGlobalLevel(level)
-	zerolog.TimeFieldFormat = time.RFC3339
+	// Unix ms avoids the alloc time.Format(RFC3339) does on every line, across
+	// 19 services. No consumer (Promtail configs checked) parses a
+	// human-readable timestamp out of the "time" field.
+	zerolog.TimeFieldFormat = zerolog.TimeFormatUnixMs
 
 	var out io.Writer = os.Stderr
 	if cfg.Output != nil {
