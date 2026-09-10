@@ -26,6 +26,13 @@ const (
 
 	mimeJSON = "application/json"
 	mimeForm = "application/x-www-form-urlencoded"
+
+	// go-resty/v2 keeps its default transport when none is set, whose
+	// MaxIdleConnsPerHost is GOMAXPROCS(0)+1 — 2 under the 500m CPU limit
+	// most services run under. Tuned high enough for one upstream host.
+	defaultMaxIdleConns        = 100
+	defaultMaxIdleConnsPerHost = 50
+	defaultIdleConnTimeout     = 90 * time.Second
 )
 
 type Config struct {
@@ -38,6 +45,8 @@ type Config struct {
 	UserAgent     string
 	Debug         bool
 	OnError       func(req *goresty.Request, err error)
+	// Transport overrides the pooled default from defaultTransport.
+	Transport http.RoundTripper
 }
 
 type Service struct {
@@ -242,7 +251,13 @@ func buildClient(cfg Config) *goresty.Client {
 		cfg.UserAgent = defaultUserAgent
 	}
 
+	transport := cfg.Transport
+	if transport == nil {
+		transport = defaultTransport()
+	}
+
 	client := goresty.New().
+		SetTransport(transport).
 		SetTimeout(cfg.Timeout).
 		SetRetryCount(cfg.RetryCount).
 		SetRetryWaitTime(cfg.RetryWaitTime).
@@ -267,6 +282,16 @@ func buildClient(cfg Config) *goresty.Client {
 		client.OnError(cfg.OnError)
 	}
 	return client
+}
+
+// defaultTransport clones http.DefaultTransport so TLS/proxy/dialer defaults
+// stay intact, only raising the idle connection pool.
+func defaultTransport() *http.Transport {
+	t := http.DefaultTransport.(*http.Transport).Clone()
+	t.MaxIdleConns = defaultMaxIdleConns
+	t.MaxIdleConnsPerHost = defaultMaxIdleConnsPerHost
+	t.IdleConnTimeout = defaultIdleConnTimeout
+	return t
 }
 
 func expectSuccess(resp *goresty.Response, err error) error {
