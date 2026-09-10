@@ -53,8 +53,20 @@ func parseIdentity(c fiber.Ctx) *Identity {
 		AccountUID:     c.Get(HeaderAccountUID),
 		OrgUID:         c.Get(HeaderOrgUID),
 		ProductSlugs:   parseCSV(c.Get(HeaderProductSlugs)),
-		RequestID:      c.Get(HeaderRequestID),
+		RequestID:      requestID(c),
 	}
+}
+
+// requestID prefers the ULID the RequestID middleware stored in Locals: it
+// writes the header via c.Set, which in Fiber v3 targets the RESPONSE, not
+// the request, so reading HeaderRequestID here would be empty whenever the
+// gateway itself sent no request header — the exact case the ULID exists
+// for. Falls back to the request header for chains that skip RequestID().
+func requestID(c fiber.Ctx) string {
+	if id := RequestIDFromContext(c); id != "" {
+		return id
+	}
+	return c.Get(HeaderRequestID)
 }
 
 func parseBool(v string) bool {
