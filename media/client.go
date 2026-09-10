@@ -19,8 +19,30 @@ type Client struct {
 	syncClient *http.Client
 }
 
-func closeBody(c io.Closer) {
-	_ = c.Close()
+// closeBody drains the body before closing so the underlying connection can
+// return to the pool. An undrained body (e.g. after reading only the first
+// 512 bytes of an error response) makes http.Client open a fresh connection
+// per request instead of reusing one, which collapses keep-alive exactly
+// during an upstream incident when error bodies get large.
+func closeBody(rc io.ReadCloser) {
+	_, _ = io.Copy(io.Discard, rc)
+	_ = rc.Close()
+}
+
+const (
+	defaultMaxIdleConns        = 100
+	defaultMaxIdleConnsPerHost = 50
+	defaultIdleConnTimeout     = 90 * time.Second
+)
+
+// defaultTransport tunes connection pooling for the media service host.
+// Cloned from http.DefaultTransport so TLS/proxy/dialer defaults stay intact.
+func defaultTransport() *http.Transport {
+	t := http.DefaultTransport.(*http.Transport).Clone()
+	t.MaxIdleConns = defaultMaxIdleConns
+	t.MaxIdleConnsPerHost = defaultMaxIdleConnsPerHost
+	t.IdleConnTimeout = defaultIdleConnTimeout
+	return t
 }
 
 func New(cfg Config) *Client {
@@ -36,10 +58,14 @@ func New(cfg Config) *Client {
 			syncTimeout = timeout
 		}
 	}
+	transport := cfg.Transport
+	if transport == nil {
+		transport = defaultTransport()
+	}
 	return &Client{
 		baseURL:    strings.TrimRight(cfg.BaseURL, "/"),
-		httpClient: &http.Client{Timeout: timeout},
-		syncClient: &http.Client{Timeout: syncTimeout},
+		httpClient: &http.Client{Timeout: timeout, Transport: transport},
+		syncClient: &http.Client{Timeout: syncTimeout, Transport: transport},
 	}
 }
 

@@ -1,6 +1,9 @@
 package media
 
-import "time"
+import (
+	"net/http"
+	"time"
+)
 
 type Config struct {
 	BaseURL string
@@ -9,6 +12,12 @@ type Config struct {
 	// Si 0, se usa max(Timeout, 60s) para que el cliente nunca corte antes
 	// que el server (MEDIA_SYNC_TIMEOUT default 30s) + margen de red.
 	SyncTimeout time.Duration
+	// Transport overrides the HTTP transport for both httpClient and
+	// syncClient. If nil, New builds a tuned *http.Transport (see
+	// defaultTransport in client.go) instead of inheriting Go's default,
+	// whose MaxIdleConnsPerHost of 2 forces a fresh TCP+TLS handshake past
+	// the second concurrent upload.
+	Transport http.RoundTripper
 }
 
 type UploadOptions struct {
