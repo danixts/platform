@@ -59,4 +59,4 @@ check: fmt imports vet lint build
 
 tools:
 	$(GO) install golang.org/x/tools/cmd/goimports@latest
-	$(GO) install github.com/golangci/golangci-lint/cmd/golangci-lint@latest
+	$(GO) install github.com/golangci/golangci-lint/v2/cmd/golangci-lint@v2.15.0
