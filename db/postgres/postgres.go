@@ -12,8 +12,8 @@ import (
 )
 
 const (
-	defaultMaxOpenConns    = 50
-	defaultMaxIdleConns    = 10
+	defaultMaxOpenConns    = 10
+	defaultMaxIdleConns    = 2
 	defaultConnMaxLifetime = 30 * time.Minute
 	defaultConnMaxIdleTime = 5 * time.Minute
 	defaultSlowThreshold   = 200 * time.Millisecond
